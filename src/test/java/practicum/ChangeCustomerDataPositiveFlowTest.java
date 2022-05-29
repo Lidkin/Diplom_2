@@ -4,9 +4,8 @@ import io.restassured.response.Response;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-import practicum.customer.CustomerClient;
-import practicum.customer.TokenAndResponseBody;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,8 +21,8 @@ public class ChangeCustomerDataPositiveFlowTest {
     static String newName = "LidLid";
 
     static String accessToken;
-    static CustomerClient customerClient = new CustomerClient();
-    static Customer customer = new Customer(
+    static Customer customer = new Customer();
+    static CustomerBody body = new CustomerBody(
             email,
             password,
             name);
@@ -50,23 +49,23 @@ public class ChangeCustomerDataPositiveFlowTest {
 
     @BeforeClass
     public static void setUp(){
-        Response response = customerClient.doRegister(customer);
+        Response response = customer.doRegister(body);
         accessToken = new TokenAndResponseBody().token(response).get(0);
     }
 
     @AfterClass
     public static void cleanUp(){
-        customerClient.doDelete(accessToken);
+        customer.doDelete(accessToken);
     }
 
     @Test
     public void changeCustomerInformation(){
-        Customer changedCustomer = new Customer(emailParameter, passwordParameter, nameParameter);
-        TokenAndResponseBody body = new TokenAndResponseBody(emailParameter.toLowerCase(), nameParameter);
-        Response response = customerClient.doPatch(changedCustomer, accessToken);
+        CustomerBody changedCustomerBody = new CustomerBody(emailParameter, passwordParameter, nameParameter);
+        TokenAndResponseBody responseBody = new TokenAndResponseBody(emailParameter.toLowerCase(), nameParameter);
+        Response response = customer.doPatchWithData(changedCustomerBody, accessToken);
         response.then().assertThat().statusCode(200);
         String actualResponseBody = response.body().prettyPrint();
-        String expectedResponseBody = body.customerDataBody();
+        String expectedResponseBody = responseBody.customerDataBody();
         assertEquals(expectedResponseBody, actualResponseBody);
     }
 

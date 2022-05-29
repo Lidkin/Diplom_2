@@ -6,9 +6,9 @@ import io.restassured.response.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-import practicum.customer.CustomerClient;
-import practicum.customer.TokenAndResponseBody;
+
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -19,7 +19,7 @@ public class RegisterCustomerParameterizedTest {
     static String name = "Kokofonik";
 
     TokenAndResponseBody body = new TokenAndResponseBody();
-    final CustomerClient customerClient = new CustomerClient();
+    final Customer customer = new Customer();
 
     @Parameterized.Parameter
     public String emailParameter;
@@ -34,7 +34,7 @@ public class RegisterCustomerParameterizedTest {
     public String notFilled;
 
     @Parameterized.Parameters(name = " _{0}_ || _{1}_ || _{2}_ || not filled: {3}")
-    public static Object[][] getData(){
+    public static Object[][] registrationData(){
         return new Object[][]{
             {null, password, name, "email"},
             {email, null, name, "password"},
@@ -45,11 +45,12 @@ public class RegisterCustomerParameterizedTest {
     @Description("code: 403. success: false.")
     @DisplayName("Email, password and name are required fields")
     @Test
-    public void registerCustomerWithIncompleteData() {
-        Response errorResponse = customerClient.doPost(new Customer(emailParameter, passwordParameter, nameParameter));
+    public void registerCustomerWithIncompleteDataTest() throws InterruptedException {
+        Response errorResponse = customer.doRegister(new CustomerBody(emailParameter, passwordParameter, nameParameter));
         errorResponse.then().assertThat().statusCode(403);
         String actualResponseBody = errorResponse.body().prettyPrint();
-        String expectedResponseBody = body.expectedWrongRegisteredBody();
+        String expectedResponseBody = body.wrongRegisteredMessageBody();
         assertEquals(expectedResponseBody, actualResponseBody);
+        Thread.sleep(2000);
     }
 }

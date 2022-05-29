@@ -8,9 +8,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-import practicum.customer.CustomerClient;
-import practicum.customer.TokenAndResponseBody;
+
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -24,22 +24,22 @@ public class LoginCustomerParameterizedTest {
     static String wrongPassword = "333-kokoko-111";
 
     static String accessToken;
-    static CustomerClient customerClient = new CustomerClient();
+    static Customer customer = new Customer();
     static TokenAndResponseBody tokenOrBody = new TokenAndResponseBody();
-    static Customer customerBody = new Customer(
+    static CustomerBody customerBody = new CustomerBody(
             email,
             password,
             name);
 
     @BeforeClass
     public static void getToken() {
-        Response before = customerClient.doRegister(customerBody);
+        Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
 
     @AfterClass
     public static void cleanUp() {
-        customerClient.doDelete(accessToken);
+        customer.doDelete(accessToken);
     }
 
     @Parameterized.Parameter
@@ -61,11 +61,12 @@ public class LoginCustomerParameterizedTest {
     @Description("code: 401. success: false.")
     @DisplayName("email or password are incorrect")
     @Test
-    public void registerCustomerWithIncompleteDataTest() {
-        Response errorResponse = customerClient.doLogin(new Customer(emailParameter, passwordParameter));
+    public void registerCustomerWithIncompleteDataTest() throws InterruptedException {
+        Response errorResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
         errorResponse.then().assertThat().statusCode(401);
         String actualResponseBody = errorResponse.body().prettyPrint();
         String expectedResponseBody = tokenOrBody.wrongLoginMessageBody();
         assertEquals(expectedResponseBody, actualResponseBody);
+        Thread.sleep(2000);
     }
 }

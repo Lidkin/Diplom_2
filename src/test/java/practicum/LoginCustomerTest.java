@@ -6,9 +6,9 @@ import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-import practicum.customer.CustomerClient;
-import practicum.customer.TokenAndResponseBody;
+
 import static org.junit.Assert.assertEquals;
 
 
@@ -19,29 +19,29 @@ public class LoginCustomerTest {
     String name = "Kokofonik";
     String accessToken;
 
-    CustomerClient customerClient = new CustomerClient();
+    Customer customer = new Customer();
     TokenAndResponseBody tokenOrBody = new TokenAndResponseBody(email, name);
-    Customer customerBody = new Customer(
+    CustomerBody customerBody = new CustomerBody(
             email,
             password,
             name);
 
     @Before
     public void getToken() {
-        Response before = customerClient.doRegister(customerBody);
+        Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
 
     @After
     public void cleanUp() {
-        customerClient.doDelete(accessToken);
+        customer.doDelete(accessToken);
     }
 
     @Description("code: 200. success: true.")
     @DisplayName("login customer: positive flow")
     @Test
     public void registerCustomerPositiveFlowTest() {
-        Response response = customerClient.doLogin(customerBody);
+        Response response = customer.doLogin(customerBody);
         response.then().assertThat().statusCode(200);
         String loginAccessToken = tokenOrBody.token(response).get(0);
         String loginRefreshToken = tokenOrBody.token(response).get(1);
