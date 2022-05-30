@@ -14,7 +14,7 @@ public class Order extends BaseHttp {
         return doPostRequest(baseURI + apiOrders, body);
     }
 
-    public Response doCreateOrderAuthorizedCustomer(Object body, String token){
+    public Response doCreateOrderWithToken(Object body, String token){
         return doPostRequestWithParam(baseURI + apiOrders, body, token);
     }
 
@@ -26,7 +26,7 @@ public class Order extends BaseHttp {
         return doGetRequest(baseURI + apiOrders);
     }
 
-    public  Response doGetOrdersWithParam(String token){
+    public  Response doGetOrdersWithToken(String token){
         return doGetWithTokenRequest(baseURI + apiOrders, token);
     }
 

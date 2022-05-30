@@ -42,15 +42,15 @@ public class RegisterCustomerParameterizedTest {
         };
     }
 
-    @Description("code: 403. success: false.")
-    @DisplayName("Email, password and name are required fields")
+    @Description("code: 403. success: false. \n" +
+            "Message: \"Email, password and name are required fields\"")
     @Test
     public void registerCustomerWithIncompleteDataTest() throws InterruptedException {
+        Thread.sleep(2000);
         Response errorResponse = customer.doRegister(new CustomerBody(emailParameter, passwordParameter, nameParameter));
         errorResponse.then().assertThat().statusCode(403);
         String actualResponseBody = errorResponse.body().prettyPrint();
         String expectedResponseBody = body.wrongRegisteredMessageBody();
         assertEquals(expectedResponseBody, actualResponseBody);
-        Thread.sleep(2000);
     }
 }

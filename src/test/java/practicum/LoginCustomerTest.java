@@ -27,7 +27,8 @@ public class LoginCustomerTest {
             name);
 
     @Before
-    public void getToken() {
+    public void getToken() throws InterruptedException {
+        Thread.sleep(1000);
         Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
@@ -40,7 +41,8 @@ public class LoginCustomerTest {
     @Description("code: 200. success: true.")
     @DisplayName("login customer: positive flow")
     @Test
-    public void registerCustomerPositiveFlowTest() {
+    public void loginCustomerPositiveFlowTest() throws InterruptedException {
+        Thread.sleep(1000);
         Response response = customer.doLogin(customerBody);
         response.then().assertThat().statusCode(200);
         String loginAccessToken = tokenOrBody.token(response).get(0);

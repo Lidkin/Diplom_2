@@ -1,5 +1,7 @@
 package practicum;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -36,7 +38,7 @@ public class ChangeCustomerDataPositiveFlowTest {
     @Parameterized.Parameter(2)
     public String nameParameter;
 
-    @Parameterized.Parameters(name = "email {0}, password {1}, name {2} || statusCode {3}")
+    @Parameterized.Parameters(name = "email {0}, password {1}, name {2}")
     public static Object[][] registrationData(){
         return new Object[][]{
                 {newEmail, newPassword, newName},
@@ -48,7 +50,8 @@ public class ChangeCustomerDataPositiveFlowTest {
     }
 
     @BeforeClass
-    public static void setUp(){
+    public static void setUp() throws InterruptedException {
+        Thread.sleep(1000);
         Response response = customer.doRegister(body);
         accessToken = new TokenAndResponseBody().token(response).get(0);
     }
@@ -58,6 +61,9 @@ public class ChangeCustomerDataPositiveFlowTest {
         customer.doDelete(accessToken);
     }
 
+
+    @Description("code: 200. success: true. \n" +
+            "Change customer information. Parametrized Test.")
     @Test
     public void changeCustomerInformation(){
         CustomerBody changedCustomerBody = new CustomerBody(emailParameter, passwordParameter, nameParameter);

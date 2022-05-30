@@ -30,7 +30,7 @@ public class CreateOrderErrorTest {
     IngredientsNameAndId id = new IngredientsNameAndId();
     Order order = new Order();
 
-    @Step("replacing all '0' with the letter 'o' in a random hash of an ingredient")
+    @Step("replacing all '0' with the letter 'o' in a random Id of an ingredient")
     public String getWrongId() {
         Random random = new Random();
         int i = random.nextInt(id.getIngredientsId().length);
@@ -38,7 +38,8 @@ public class CreateOrderErrorTest {
     }
 
     @BeforeClass
-    public static void getToken() {
+    public static void getToken() throws InterruptedException {
+        Thread.sleep(1000);
         Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
@@ -48,10 +49,12 @@ public class CreateOrderErrorTest {
         customer.doDelete(accessToken);
     }
 
-    @Description("code: 400. success: false.")
-    @DisplayName("Ingredient ids must be provided")
+    @Description("code: 400. success: false. \n" +
+            "Message: \"Ingredient ids must be provided\"")
+    @DisplayName("Test with an empty list of ingredients")
     @Test
-    public void emptyIngredientsTest(){
+    public void emptyIngredientsTest() throws InterruptedException {
+        Thread.sleep(2000);
         String body = "{\"ingredients\": []}";
         Response response = order.doCreateOrder(body);
         response.then().assertThat().statusCode(400);
@@ -60,22 +63,26 @@ public class CreateOrderErrorTest {
         assertEquals(expectedResponseBody, actualResponseBody);
     }
 
-    @Description("code: 400. success: false.")
-    @DisplayName("Ingredient ids must be provided")
+    @Description("code: 400. success: false. \n" +
+            "Message: \"Ingredient ids must be provided\"")
+    @DisplayName("Test with an empty list of ingredients for authorized customer")
     @Test
-    public void emptyIngredientsAuthorizedCustomerTest(){
+    public void emptyIngredientsAuthorizedCustomerTest() throws InterruptedException {
+        Thread.sleep(2000);
         String body = "{\"ingredients\": []}";
-        Response response = order.doCreateOrderAuthorizedCustomer(body,accessToken);
+        Response response = order.doCreateOrderWithToken(body,accessToken);
         response.then().assertThat().statusCode(400);
         String actualResponseBody = response.body().prettyPrint();
         String expectedResponseBody = tokenOrBody.emptyIngredientsOrderMessageBody();
         assertEquals(expectedResponseBody, actualResponseBody);
     }
 
-    @Description("code: 500")
-    @DisplayName("Internal Server Error")
+    @Description("code: 500 \n" +
+            "Message: \"Internal Server Error\"")
+    @DisplayName("Create order with invalid ingredient id")
     @Test
-    public void invalidIngredientIdTest(){
+    public void invalidIngredientIdTest() throws InterruptedException {
+        Thread.sleep(2000);
         String wrongId = getWrongId();
         for (String idIngredient : id.getIngredientsId())
             assertNotEquals(idIngredient, wrongId);
@@ -85,15 +92,17 @@ public class CreateOrderErrorTest {
         response.body().prettyPrint();
     }
 
-    @Description("code: 500")
-    @DisplayName("Internal Server Error")
+    @Description("code: 500 \n" +
+            "Message: \"Internal Server Error\"")
+    @DisplayName("Create order with invalid ingredient id for authorized customer.")
     @Test
-    public void invalidIngredientIdAuthorizedCustomerTest(){
+    public void invalidIngredientIdAuthorizedCustomerTest() throws InterruptedException {
+        Thread.sleep(2000);
         String wrongId = getWrongId();
         for (String idIngredient : id.getIngredientsId())
             assertNotEquals(idIngredient, wrongId);
         String body = "{\"ingredients\": [\"" + wrongId + "\"]}";
-        Response response = order.doCreateOrderAuthorizedCustomer(body, accessToken);
+        Response response = order.doCreateOrderWithToken(body, accessToken);
         response.then().assertThat().statusCode(500);
         response.body().prettyPrint();
     }

@@ -1,7 +1,6 @@
 package practicum;
 
 import io.qameta.allure.Description;
-import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,7 +28,8 @@ public class CreateOrderTest {
     static String accessToken;
 
     @BeforeClass
-    public static void getToken() {
+    public static void getToken() throws InterruptedException {
+        Thread.sleep(1000);
         Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
@@ -64,22 +64,22 @@ public class CreateOrderTest {
         };
     }
 
-    @Description("code: 200 success: true.")
-    @DisplayName("create order for authorized customer")
+    @Description("code: 200 success: true. \n" +
+            "Create order for an authorized customer. Parametrized Test.")
     @Test
     public void createOrderAuthorizedCustomerPositiveFlowTest() throws InterruptedException {
         IngredientsNameAndId id = new IngredientsNameAndId();
         String body = "{\"ingredients\": [" + id.getBun().get(bunIndex) + "," + ingredients.randomIngredientsAmount(sauceCount, mainCount).toString().substring(1) + "}";
         String names = bunName + "," + ingredients.getSaucesNames().toString() + "," + ingredients.getMainNames().toString();
-        Response response = order.doCreateOrderAuthorizedCustomer(body,accessToken);
+        Response response = order.doCreateOrderWithToken(body,accessToken);
         response.then().assertThat().statusCode(200);
         System.out.println(response.body().path("order.ingredients.name").toString());
         System.out.println(names);
-        Thread.sleep(2000);
+        Thread.sleep(1000);
     }
 
-    @Description("code: 200 success: true.")
-    @DisplayName("create order for an unauthorized customer")
+    @Description("code: 200 success: true. \n" +
+            "Create order for an unauthorized customer. Parametrized Test.")
     @Test
     public void createOrderPositiveFlowTest() throws InterruptedException {
         IngredientsNameAndId id = new IngredientsNameAndId();
@@ -89,7 +89,7 @@ public class CreateOrderTest {
         response.then().assertThat().statusCode(200);
         response.body().prettyPrint();
         System.out.println(names);
-        Thread.sleep(2000);
+        Thread.sleep(1000);
     }
     
 }

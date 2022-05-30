@@ -32,7 +32,8 @@ public class LoginCustomerParameterizedTest {
             name);
 
     @BeforeClass
-    public static void getToken() {
+    public static void getToken() throws InterruptedException {
+        Thread.sleep(1000);
         Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
@@ -58,15 +59,15 @@ public class LoginCustomerParameterizedTest {
         };
     }
 
-    @Description("code: 401. success: false.")
-    @DisplayName("email or password are incorrect")
+    @Description("code: 401. success: false. \n" +
+            "Message: \"email or password are incorrect\"")
     @Test
     public void registerCustomerWithIncompleteDataTest() throws InterruptedException {
+        Thread.sleep(1000);
         Response errorResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
         errorResponse.then().assertThat().statusCode(401);
         String actualResponseBody = errorResponse.body().prettyPrint();
         String expectedResponseBody = tokenOrBody.wrongLoginMessageBody();
         assertEquals(expectedResponseBody, actualResponseBody);
-        Thread.sleep(2000);
     }
 }

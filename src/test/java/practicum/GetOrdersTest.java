@@ -31,7 +31,8 @@ public class GetOrdersTest {
     List body = new ArrayList<>();
 
     @BeforeClass
-    public static void getToken() {
+    public static void getToken() throws InterruptedException {
+        Thread.sleep(1000);
         Response before = customer.doRegister(customerBody);
         accessToken = tokenOrBody.token(before).get(0);
     }
@@ -50,23 +51,24 @@ public class GetOrdersTest {
             body.add("\"" + id.getIngredientsId()[i] + "\"");
         }
         String bodyOrder = body.toString();
-        return order.doCreateOrderAuthorizedCustomer("{\"ingredients\": " + bodyOrder + "}", token);
+        return order.doCreateOrderWithToken("{\"ingredients\": " + bodyOrder + "}", token);
     }
 
     @Description("code: 200. success: true.")
-    @DisplayName(" ")
+    @DisplayName("Get orders from a unique customer.")
     @Test
     public void getOrdersUniqueCustomerTest(){
         Response registerCustomer = createNewOrder(accessToken);
         String expectedResponseBody = registerCustomer.getBody().path("name");
-        Response response = order.doGetOrdersWithParam(accessToken);
+        Response response = order.doGetOrdersWithToken(accessToken);
         response.then().assertThat().statusCode(200);
         String actualResponseBody = response.getBody().path("orders.name").toString().substring(1).replaceAll("]", "");
         assertEquals(expectedResponseBody, actualResponseBody);
     }
 
-    @Description("code: 401. success: false.")
-    @DisplayName("You should be authorised")
+    @Description("code: 401. success: false. \n" +
+            "Message: \"You should be authorised\"")
+    @DisplayName("Get orders from unauthorized customer.")
     @Test
     public void getOrdersUnauthorizedCustomerTest(){
         Response response = order.doGetOrders();
