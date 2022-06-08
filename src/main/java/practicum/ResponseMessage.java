@@ -41,4 +41,18 @@ public class ResponseMessage {
         return gson.toJson(validResponse);
     }
 
+    public String responseBody() {
+
+        Map<String, String> customer = new HashMap<>();
+        customer.put("email", email.toLowerCase());
+        customer.put("name", name);
+
+        Map<String, Object> validResponse = new HashMap<>();
+        validResponse.put("success", true);
+        validResponse.put("user", customer);
+
+        Gson gson = new Gson();
+        return gson.toJson(validResponse);
+    }
+
 }

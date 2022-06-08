@@ -4,60 +4,55 @@ import io.restassured.config.RedirectConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+
 import static io.restassured.RestAssured.given;
 
 public class BaseHttp {
 
-    private final String JSON = "application/json";
+    private final String baseURI = "https://stellarburgers.nomoreparties.site";
     private final RestAssuredConfig config = RestAssuredConfig.newConfig()
             .sslConfig(new SSLConfig().relaxedHTTPSValidation())
             .redirect(new RedirectConfig().followRedirects(true));
+    private final RequestSpecification specification = given().config(config).header("Content-Type", "application/json");
 
-
-    protected Response doGetWithTokenRequest(String uri, String token) {
+    protected Response doGetWithTokenRequest(String api, String token) {
         return given().config(config)
                 .auth().oauth2(token)
-                .get(uri);
+                .get(baseURI + api);
     }
 
-    protected Response doGetRequest(String uri) {
-        return given().config(config)
-                .header("Content-Type", JSON)
-                .get(uri);
+    protected Response doGetRequest(String api) {
+        return specification.get(baseURI + api);
     }
 
-    protected Response doPostRequest(String uri, Object body){
-        return given().config(config)
-                .header("Content-Type", JSON)
+    protected Response doPostRequest(String api, Object body){
+        return specification
                 .body(body)
-                .post(uri);
+                .post(baseURI + api);
     }
 
-    protected Response doPostRequestWithParam(String uri, Object body, String token){
-        return given().config(config)
-                .header("Content-Type", JSON)
+    protected Response doPostRequestWithParam(String api, Object body, String token){
+        return specification
                 .auth().oauth2(token)
                 .body(body)
-                .post(uri);
+                .post(baseURI + api);
     }
-    protected Response doPatchRequestWithParam(String uri, Object body, String token){
-        return given().config(config)
-                .header("Content-Type", JSON)
+    protected Response doPatchRequestWithParam(String api, Object body, String token){
+        return specification
                 .auth().oauth2(token)
                 .body(body)
-                .patch(uri);
+                .patch(baseURI + api);
     }
 
-    protected Response doPatchRequest(String uri){
-        return given().config(config)
-                .header("Content-Type", JSON)
-                .patch(uri);
+    protected Response doPatchRequest(String api){
+        return specification.patch(baseURI + api);
     }
 
-    protected Response doDeleteRequest(String uri, String token){
+    protected Response doDeleteRequest(String api, String token){
         return given().config(config)
                 .auth().oauth2(token)
-                .delete(uri);
+                .delete(baseURI + api);
     }
 
 }

@@ -1,41 +1,36 @@
 package practicum;
 
 import io.qameta.allure.Description;
-import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import org.json.JSONException;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.skyscreamer.jsonassert.JSONAssert;
+import practicum.customer.Credentials;
 import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class LoginCustomerParameterizedTest {
 
-    static String email = "lidkin@mail.ru";
-    static String password = "333-kokoko-333";
-    static String name = "Kokofonik";
-
-    static String wrongEmail = "lidkin@mail.com";
-    static String wrongPassword = "333-kokoko-111";
-
     static String accessToken;
+    Response errorResponse;
+    static Credentials credentials = new Credentials();
+    static ResponseMessage responseMessage = new ResponseMessage();
     static Customer customer = new Customer();
-    static TokenAndResponseBody tokenOrBody = new TokenAndResponseBody();
-    static CustomerBody customerBody = new CustomerBody(
-            email,
-            password,
-            name);
+    static CustomerBody body = new CustomerBody(
+            credentials.getEmail(),
+            credentials.getPassword(),
+            credentials.getName());
 
     @BeforeClass
     public static void getToken() throws InterruptedException {
         Thread.sleep(1000);
-        Response before = customer.doRegister(customerBody);
-        accessToken = tokenOrBody.token(before).get(0);
+        accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
     }
 
     @AfterClass
@@ -52,22 +47,28 @@ public class LoginCustomerParameterizedTest {
     @Parameterized.Parameters(name = " _{0}_ || _{1}_ ")
     public static Object[][] credentialsData(){
         return new Object[][]{
-            {null, password},
-            {wrongEmail, password},
-            {email, null},
-            {email, wrongPassword},
+            {null, body.getPassword()},
+            {credentials.getEmail(), body.getPassword()},
+            {body.getEmail(), null},
+            {body.getEmail(), credentials.getPassword()},
+            {credentials.getEmail(), credentials.getPassword()},
         };
+    }
+
+    @After
+    public void checkAndDelete(){
+        if (errorResponse.body().path("accessToken") != null)
+            customer.doDelete(errorResponse.body().path("accessToken").toString().substring(7));
     }
 
     @Description("code: 401. success: false. \n" +
             "Message: \"email or password are incorrect\"")
     @Test
-    public void registerCustomerWithIncompleteDataTest() throws InterruptedException {
+    public void registerCustomerWithIncompleteDataTest() throws InterruptedException, JSONException {
         Thread.sleep(1000);
-        Response errorResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
+        errorResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
         errorResponse.then().assertThat().statusCode(401);
-        String actualResponseBody = errorResponse.body().prettyPrint();
-        String expectedResponseBody = tokenOrBody.wrongLoginMessageBody();
-        assertEquals(expectedResponseBody, actualResponseBody);
+        JSONAssert.assertEquals(responseMessage.errorMessage("email or password are incorrect"), errorResponse.getBody().asString(), true);
     }
+
 }

@@ -3,58 +3,55 @@ package practicum;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.*;
+import org.skyscreamer.jsonassert.JSONAssert;
+import practicum.customer.Credentials;
 import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-import static org.junit.Assert.assertEquals;
+
 
 public class ChangeCustomerDataNegativeFlowTest {
 
-    static String email = "lidkin@mail.ru";
-    static String password = "12345";
-    static String name = "Lid";
-    static String accessToken;
+    Credentials credentials = new Credentials();
+    ResponseMessage responseMessage = new ResponseMessage();
+    Customer customer = new Customer();
+    CustomerBody body = new CustomerBody(credentials.getEmail(), credentials.getPassword(), credentials.getName());
+    CustomerBody bodyExists = new CustomerBody(credentials.getEmail(), credentials.getPassword(), credentials.getName());
+    String accessToken, accessTokenExists;
+    Response response;
 
-    static Customer customer = new Customer();
-    static CustomerBody body = new CustomerBody(email, password, name);
-    TokenAndResponseBody tokenOrBody = new TokenAndResponseBody();
-
-    @BeforeClass
-    public static void setUp() throws InterruptedException {
+    @Before
+    public void setUp() throws InterruptedException {
         Thread.sleep(1000);
-        Response response = customer.doRegister(body);
-        accessToken = new TokenAndResponseBody().token(response).get(0);
+        accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
+        accessTokenExists = customer.doRegister(bodyExists).body().path("accessToken").toString().substring(7);
     }
 
-    @AfterClass
-    public static void cleanUp(){
+    @After
+    public void cleanUp(){
         customer.doDelete(accessToken);
+        customer.doDelete(accessTokenExists);
     }
 
     @Description("code: 403. success: false. \n" +
             "Message: \"User with such email already exists\"")
     @DisplayName("Use email that is already exists.")
     @Test
-    public void emailAlreadyExistsTest(){
-        Response response = customer.doPatchWithData(body.setEmail("test-data@yandex.ru"), accessToken);
+    public void emailAlreadyExistsTest() throws JSONException {
+        Response response = customer.doUpdate(body.setEmail(bodyExists.getEmail()), accessToken);
         response.then().assertThat().statusCode(403);
-        String actualResponseBody = response.body().prettyPrint();
-        String expectedResponseBody = tokenOrBody.usedCustomerEmailMessageBody();
-        assertEquals(expectedResponseBody, actualResponseBody);
+        JSONAssert.assertEquals(responseMessage.errorMessage("User with such email already exists"), response.body().asString(), true);
     }
 
     @Description("code: 401. success: false. \n" +
             "Message: \"You should be authorised\"")
     @DisplayName("Unauthorized customer.")
     @Test
-    public void unauthorizedCustomerTest(){
-        Response response = customer.doPatch();
+    public void unauthorizedCustomerTest() throws JSONException {
+        response = customer.doUpdateEmptyData();
         response.then().assertThat().statusCode(401);
-        String actualResponseBody = response.body().prettyPrint();
-        String expectedResponseBody = tokenOrBody.unauthorizedCustomerMessageBody();
-        assertEquals(expectedResponseBody, actualResponseBody);
+        JSONAssert.assertEquals(responseMessage.errorMessage("You should be authorised"), response.body().asString(), true);
     }
 
 }

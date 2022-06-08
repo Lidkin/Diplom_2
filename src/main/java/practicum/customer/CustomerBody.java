@@ -7,15 +7,33 @@ public class CustomerBody {
     String password;
     String name;
 
+
     public CustomerBody(String email, String password, String name) {
         this.email = email;
         this.password = password;
         this.name = name;
     }
 
-    public Object setEmail(String email){
+    public String getEmail() {
+        return email;
+    }
+
+    public CustomerBody setEmail(String email){
         this.email = email;
         return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public CustomerBody setPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public CustomerBody(String email, String password) {

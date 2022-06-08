@@ -5,33 +5,28 @@ import practicum.BaseHttp;
 
 public class Customer extends BaseHttp {
 
-    private final String baseURI = "https://stellarburgers.nomoreparties.site";
     private final String apiUser = "/api/auth/user";
     private final String apiLogin = "/api/auth/login";
     private final String apiRegister = "/api/auth/register";
 
 
-    public Response doRegister(Object body){
-        return doPostRequest(baseURI + apiRegister, body);
+    public Response doRegister(CustomerBody body){
+        return doPostRequest(apiRegister, body);
     }
 
-    public Response doLogin(Object body){
-        return doPostRequest(baseURI + apiLogin, body);
+    public Response doLogin(CustomerBody body){
+        return doPostRequest(apiLogin, body);
     }
 
     public Response doDelete(String token){
-        return doDeleteRequest(baseURI + apiUser, token);
+        return doDeleteRequest(apiUser, token);
     }
 
-    public Response doGet(String token){
-         return doGetWithTokenRequest(baseURI + apiUser, token);
+    public Response doUpdate(CustomerBody body, String token){
+        return doPatchRequestWithParam(apiUser, body, token);
     }
-
-    public Response doPatchWithData(Object body, String token){
-        return doPatchRequestWithParam(baseURI + apiUser, body, token);
-    }
-    public Response doPatch(){
-        return doPatchRequest(baseURI + apiUser);
+    public Response doUpdateEmptyData(){
+        return doPatchRequest(apiUser);
     }
 
 }

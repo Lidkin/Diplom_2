@@ -1,33 +1,26 @@
 package practicum;
 
 import io.qameta.allure.Description;
-import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import org.json.JSONException;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.skyscreamer.jsonassert.JSONAssert;
+import practicum.customer.Credentials;
 import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class ChangeCustomerDataPositiveFlowTest {
 
-    static String email = "lidkin@mail.ru";
-    static String password = "123";
-    static String name = "Lidkin";
-
-    static String newEmail = "lidLid@mail.ru";
-    static String newPassword = "321";
-    static String newName = "LidLid";
-
+    static Credentials credentials = new Credentials();
     static String accessToken;
     static Customer customer = new Customer();
     static CustomerBody body = new CustomerBody(
-            email,
-            password,
-            name);
+            credentials.getEmail(),
+            credentials.getPassword(),
+            credentials.getName());
 
     @Parameterized.Parameter
     public String emailParameter;
@@ -41,38 +34,34 @@ public class ChangeCustomerDataPositiveFlowTest {
     @Parameterized.Parameters(name = "email {0}, password {1}, name {2}")
     public static Object[][] registrationData(){
         return new Object[][]{
-                {newEmail, newPassword, newName},
-                {email, newPassword, newName},
-                {email, password, newName},
-                {newEmail, newPassword, name},
-                {newEmail, password, name},
+                {credentials.getEmail(), credentials.getPassword(), credentials.getName()},
+                {body.getEmail(), credentials.getPassword(), credentials.getName()},
+                {body.getEmail(), body.getPassword(), credentials.getName()},
+                {credentials.getEmail(), credentials.getPassword(), body.getName()},
+                {credentials.getEmail(), body.getPassword(), body.getName()},
         };
     }
 
     @BeforeClass
     public static void setUp() throws InterruptedException {
         Thread.sleep(1000);
-        Response response = customer.doRegister(body);
-        accessToken = new TokenAndResponseBody().token(response).get(0);
-    }
+        accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
+     }
 
     @AfterClass
     public static void cleanUp(){
         customer.doDelete(accessToken);
     }
 
-
     @Description("code: 200. success: true. \n" +
             "Change customer information. Parametrized Test.")
     @Test
-    public void changeCustomerInformation(){
+    public void changeCustomerInformation() throws JSONException {
         CustomerBody changedCustomerBody = new CustomerBody(emailParameter, passwordParameter, nameParameter);
-        TokenAndResponseBody responseBody = new TokenAndResponseBody(emailParameter.toLowerCase(), nameParameter);
-        Response response = customer.doPatchWithData(changedCustomerBody, accessToken);
+        ResponseMessage responseMessage = new ResponseMessage(emailParameter, nameParameter);
+        Response response = customer.doUpdate(changedCustomerBody, accessToken);
         response.then().assertThat().statusCode(200);
-        String actualResponseBody = response.body().prettyPrint();
-        String expectedResponseBody = responseBody.customerDataBody();
-        assertEquals(expectedResponseBody, actualResponseBody);
+        JSONAssert.assertEquals(responseMessage.responseBody(), response.getBody().asString(), true);
     }
 
 }
