@@ -1,37 +1,49 @@
 package practicum;
 
+import com.google.gson.Gson;
 import io.qameta.allure.Description;
+import io.qameta.allure.internal.shadowed.jackson.core.JsonProcessingException;
 import io.restassured.response.Response;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import practicum.customer.Credentials;
 import practicum.customer.Customer;
 import practicum.customer.CustomerBody;
 import practicum.order.Ingredients;
-import practicum.order.IngredientsNameAndId;
 import practicum.order.Order;
-
+import java.util.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class CreateOrderTest {
 
-    static String email = "lidkin@mail.ru";
-    static String password = "333-kokoko-333";
-    static String name = "Kokofonik";
-
+    static Credentials credentials = new Credentials();
+    static Order order = new Order();
     static Customer customer = new Customer();
-    static CustomerBody customerBody = new CustomerBody(email,password,name);
-    static TokenAndResponseBody tokenOrBody = new TokenAndResponseBody();
-    static IngredientsNameAndId nameIngredient = new IngredientsNameAndId();
+    static CustomerBody body = new CustomerBody(
+            credentials.getEmail(),
+            credentials.getPassword(),
+            credentials.getName());
+    static Ingredients ingredients;
     static String accessToken;
+    static Gson gson = new Gson();
+    static {
+        try {
+            ingredients = new Ingredients();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
 
     @BeforeClass
     public static void getToken() throws InterruptedException {
         Thread.sleep(1000);
-        Response before = customer.doRegister(customerBody);
-        accessToken = tokenOrBody.token(before).get(0);
+        accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
     }
 
     @AfterClass
@@ -39,28 +51,19 @@ public class CreateOrderTest {
         customer.doDelete(accessToken);
     }
 
-    Ingredients ingredients = new Ingredients();
-    Order order = new Order();
-
     @Parameterized.Parameter
     public int sauceCount;
 
     @Parameterized.Parameter(1)
-    public int mainCount;
+    public int fillingCount;
 
-    @Parameterized.Parameter(2)
-    public int bunIndex;
-
-    @Parameterized.Parameter(3)
-    public String bunName;
-
-    @Parameterized.Parameters(name = "Chosen: {0} sauces, {1} mains and {3}")
+    @Parameterized.Parameters(name = "Chosen: {0} sauces and {1} fillings")
     public static Object[][] ingredientsAmount(){
         return new Object[][]{
-            {0, 1, 0, nameIngredient.getBunName().get(0)},
-            {1, 0, 1, nameIngredient.getBunName().get(1)},
-            {6, 2, 1, nameIngredient.getBunName().get(1)},
-            {4, 10, 0, nameIngredient.getBunName().get(0)},
+            {0, 1},
+            {1, 0},
+            {6, 2},
+            {4, 10},
         };
     }
 
@@ -68,28 +71,30 @@ public class CreateOrderTest {
             "Create order for an authorized customer. Parametrized Test.")
     @Test
     public void createOrderAuthorizedCustomerPositiveFlowTest() throws InterruptedException {
-        IngredientsNameAndId id = new IngredientsNameAndId();
-        String body = "{\"ingredients\": [" + id.getBun().get(bunIndex) + "," + ingredients.randomIngredientsAmount(sauceCount, mainCount).toString().substring(1) + "}";
-        String names = bunName + "," + ingredients.getSaucesNames().toString() + "," + ingredients.getMainNames().toString();
-        Response response = order.doCreateOrderWithToken(body,accessToken);
+        Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(sauceCount, fillingCount));
+        Map<String, List<String>> body = new HashMap<>();
+        body.put("ingredients", burger.get("id"));
+        Response response = order.doCreateOrderWithToken(gson.toJson(body),accessToken);
         response.then().assertThat().statusCode(200);
-        System.out.println(response.body().path("order.ingredients.name").toString());
-        System.out.println(names);
-        Thread.sleep(1000);
+        List<String> actual = response.getBody().path("order.ingredients.name");
+        List<String> expected = burger.get("name");
+        assertThat("List equality without order",
+                actual, containsInAnyOrder(expected.toArray()));
+        Thread.sleep(500);
     }
 
     @Description("code: 200 success: true. \n" +
             "Create order for an unauthorized customer. Parametrized Test.")
     @Test
     public void createOrderPositiveFlowTest() throws InterruptedException {
-        IngredientsNameAndId id = new IngredientsNameAndId();
-        String body = "{\"ingredients\": [" + id.getBun().get(bunIndex) + "," + ingredients.randomIngredientsAmount(sauceCount, mainCount).toString().substring(1) + "}";
-        String names = ingredients.getMainNames() + "," + ingredients.getSaucesNames()+ "," + bunName;
-        Response response = order.doCreateOrder(body);
+        Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(sauceCount, fillingCount));
+        Map<String, List<String>> body = new HashMap<>();
+        body.put("ingredients", burger.get("id"));
+        Response response = order.doCreateOrder(gson.toJson(body));
         response.then().assertThat().statusCode(200);
-        response.body().prettyPrint();
-        System.out.println(names);
-        Thread.sleep(1000);
+        Boolean actual = response.getBody().path("success");
+        assertTrue(actual);
+        Thread.sleep(500);
     }
-    
+
 }
