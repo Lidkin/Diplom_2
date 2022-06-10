@@ -29,9 +29,10 @@ public class CreateOrderTest {
             credentials.getEmail(),
             credentials.getPassword(),
             credentials.getName());
-    static Ingredients ingredients;
     static String accessToken;
     static Gson gson = new Gson();
+    Map<String, List<String>> bodyIngredients = new HashMap<>();
+    static Ingredients ingredients;
     static {
         try {
             ingredients = new Ingredients();
@@ -72,9 +73,8 @@ public class CreateOrderTest {
     @Test
     public void createOrderAuthorizedCustomerPositiveFlowTest() throws InterruptedException {
         Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(sauceCount, fillingCount));
-        Map<String, List<String>> body = new HashMap<>();
-        body.put("ingredients", burger.get("id"));
-        Response response = order.doCreateOrderWithToken(gson.toJson(body),accessToken);
+        bodyIngredients.put("ingredients", burger.get("id"));
+        Response response = order.doCreateOrderWithToken(gson.toJson(bodyIngredients),accessToken);
         response.then().assertThat().statusCode(200);
         List<String> actual = response.getBody().path("order.ingredients.name");
         List<String> expected = burger.get("name");
@@ -88,12 +88,10 @@ public class CreateOrderTest {
     @Test
     public void createOrderPositiveFlowTest() throws InterruptedException {
         Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(sauceCount, fillingCount));
-        Map<String, List<String>> body = new HashMap<>();
-        body.put("ingredients", burger.get("id"));
-        Response response = order.doCreateOrder(gson.toJson(body));
+        bodyIngredients.put("ingredients", burger.get("id"));
+        Response response = order.doCreateOrder(gson.toJson(bodyIngredients));
         response.then().assertThat().statusCode(200);
-        Boolean actual = response.getBody().path("success");
-        assertTrue(actual);
+        assertTrue(response.getBody().path("success"));
         Thread.sleep(500);
     }
 

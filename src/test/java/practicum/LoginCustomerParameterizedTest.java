@@ -65,10 +65,11 @@ public class LoginCustomerParameterizedTest {
             "Message: \"email or password are incorrect\"")
     @Test
     public void registerCustomerWithIncompleteDataTest() throws InterruptedException, JSONException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         errorResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
         errorResponse.then().assertThat().statusCode(401);
-        JSONAssert.assertEquals(responseMessage.errorMessage("email or password are incorrect"), errorResponse.getBody().asString(), true);
+        String expected = responseMessage.errorMessage("email or password are incorrect");
+        JSONAssert.assertEquals(expected, errorResponse.getBody().asString(), true);
     }
 
 }

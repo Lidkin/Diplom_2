@@ -25,7 +25,7 @@ public class ResponseMessage {
         return gson.toJson(messageBody);
     }
 
-    public String validResponse(String accessToken, String refreshToken) {
+    public String validResponseBody(String accessToken, String refreshToken) {
 
         Map<String, String> customer = new HashMap<>();
         customer.put("email", email.toLowerCase());
@@ -47,12 +47,12 @@ public class ResponseMessage {
         customer.put("email", email.toLowerCase());
         customer.put("name", name);
 
-        Map<String, Object> validResponse = new HashMap<>();
-        validResponse.put("success", true);
-        validResponse.put("user", customer);
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("success", true);
+        responseBody.put("user", customer);
 
         Gson gson = new Gson();
-        return gson.toJson(validResponse);
+        return gson.toJson(responseBody);
     }
 
 }

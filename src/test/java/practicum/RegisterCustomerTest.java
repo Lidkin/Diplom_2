@@ -40,11 +40,10 @@ public class RegisterCustomerTest {
     @DisplayName("Register new customer: positive flow.")
     @Test
     public void registerCustomerPositiveFlowTest() throws InterruptedException, JSONException {
-        Thread.sleep(2000);
+        Thread.sleep(500);
         response.then().assertThat().statusCode(200);
-        String actualResponseBody = response.getBody().asString();
-        String expectedResponseBody = responseMessage.validResponse(accessToken,response.body().path("refreshToken").toString());
-        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
+        String expected = responseMessage.validResponseBody(accessToken,response.body().path("refreshToken").toString());
+        JSONAssert.assertEquals(expected, response.getBody().asString(), true);
     }
 
     @Description("code: 403. success: false. \n" +
@@ -52,11 +51,10 @@ public class RegisterCustomerTest {
     @DisplayName("Register existing customer.")
     @Test
     public void registerExistingCustomerTest() throws InterruptedException, JSONException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         Response repeatedResponse = customer.doRegister(body);
         repeatedResponse.then().assertThat().statusCode(403);
-        String actualResponseBody = repeatedResponse.getBody().asString();
-        String expectedResponseBody = responseMessage.errorMessage("User already exists");
-        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
+        String expected = responseMessage.errorMessage("User already exists");
+        JSONAssert.assertEquals(expected, repeatedResponse.getBody().asString(), true);
     }
 }

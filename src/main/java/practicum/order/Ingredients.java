@@ -1,46 +1,75 @@
 package practicum.order;
 
+import io.qameta.allure.internal.shadowed.jackson.core.JsonProcessingException;
+import io.qameta.allure.internal.shadowed.jackson.databind.JsonNode;
+import io.qameta.allure.internal.shadowed.jackson.databind.ObjectMapper;
 import java.util.*;
+
 
 public class Ingredients {
 
-    IngredientsNameAndId nameOrId = new IngredientsNameAndId();
+    Order order = new Order();
+    String json = order.doGetIngredients().asString();
+    Map<Integer, List<String>> bun = new HashMap<>();
+    Map<Integer,  List<String>> sauce = new HashMap<>();
+    Map<Integer,  List<String>> filling = new HashMap<>();
 
-    List sauces = new ArrayList<>(nameOrId.getSauce());
-    List saucesNames = new ArrayList<>(nameOrId.getSauceName());
-    List sauceName = new ArrayList<>();
-    List sauceId = new ArrayList<>();
+    public Ingredients() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(json).get("data");
+        IngredientsData[] ingredients = mapper.readValue(node.toString(), IngredientsData[].class);
+        int b = 0, f = 0, s = 0;
+        for (IngredientsData el : ingredients) {
+            switch (el.getType()) {
+                case "bun" -> {
+                    bun.put(b, Arrays.asList(el.get_id(), el.getName()));
+                    b++;
+                }
+                case "main" -> {
+                    filling.put(f, Arrays.asList(el.get_id(), el.getName()));
+                    f++;
+                }
+                case "sauce" -> {
+                    sauce.put(s, Arrays.asList(el.get_id(), el.getName()));
+                    s++;
+                }
+            }
+        }
+    }
 
-    List main = new ArrayList<>(nameOrId.getMain());
-    List mainNames = new ArrayList<>(nameOrId.getMainName());
-    List mainName = new ArrayList<>();
-    List mainId = new ArrayList<>();
-
-
-    public List randomIngredientsAmount(int amountOfSauces, int amountOfMain) {
-        List customer = new ArrayList<>();
+    public Map <String, List<String>> buildRandomBurger(int amountOfSauces, int amountOfMain){
+        Map<String, List<String>> burger = new HashMap<>();
+        List <String> customIngredients = new ArrayList<>();
+        List <String> ingredientsNames = new ArrayList<>();
         Random random = new Random();
+        int n = random.nextInt(bun.size());
+        customIngredients.add(bun.get(n).get(0));
+        ingredientsNames.add(bun.get(n).get(1));
         for (int i = 0; i < amountOfSauces; i++){
-            int index = random.nextInt(sauces.size());
-            customer.add(sauces.get(index));
-            sauceName.add(saucesNames.get(index));
-            sauceId.add(sauces.get(index));
+            int index = random.nextInt(sauce.size());
+            customIngredients.add(sauce.get(index).get(0));
+            ingredientsNames.add(sauce.get(index).get(1));
         }
         for (int k = 0; k < amountOfMain; k++) {
-            int index = random.nextInt(main.size());
-            customer.add(main.get(index));
-            mainName.add(mainNames.get(index));
-            mainId.add(main.get(index));
+            int index = random.nextInt(filling.size());
+            customIngredients.add(filling.get(index).get(0));
+            ingredientsNames.add(filling.get(index).get(1));
         }
-        return customer;
+        burger.put("id", customIngredients);
+        burger.put("name", ingredientsNames);
+        return burger;
     }
 
-    public List getSaucesNames(){
-        return sauceName;
+    public Map<Integer, List<String>> getBun(){
+        return bun;
     }
 
-    public List getMainNames(){
-        return mainName;
+    public Map<Integer, List<String>> getFilling(){
+        return filling;
+    }
+
+    public Map<Integer, List<String>> getSauce(){
+        return sauce;
     }
 
 }

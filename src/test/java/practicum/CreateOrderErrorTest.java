@@ -41,7 +41,7 @@ public class CreateOrderErrorTest {
     Order order = new Order();
     Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(1, 1));
 
-    @Step("replacing all '0' with the letter 'o' in a random Id of an ingredient")
+    @Step("replacing all '0' with the letter 'o' in a random ingredients id and adding in list of valid ingredients id")
     public Map<String, List<String>> getWrongId() {
         Map<String, List<String>> wrongBody = new HashMap<>();
         List<String> wrongId = new ArrayList<>();
@@ -68,13 +68,12 @@ public class CreateOrderErrorTest {
     @DisplayName("Test with an empty list of ingredients")
     @Test
     public void emptyIngredientsTest() throws InterruptedException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         String body = "{\"ingredients\": []}";
         Response response = order.doCreateOrder(body);
         response.then().assertThat().statusCode(400);
-        String actualResponseBody = response.body().asString();
-        String expectedResponseBody = responseMessage.errorMessage("Ingredient ids must be provided");
-        assertEquals(expectedResponseBody, actualResponseBody);
+        String expected = responseMessage.errorMessage("Ingredient ids must be provided");
+        assertEquals(expected, response.body().asString());
     }
 
     @Description("code: 400. success: false. \n" +
@@ -82,34 +81,35 @@ public class CreateOrderErrorTest {
     @DisplayName("Test with an empty list of ingredients for authorized customer")
     @Test
     public void emptyIngredientsAuthorizedCustomerTest() throws InterruptedException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         String body = "{\"ingredients\": []}";
         Response response = order.doCreateOrderWithToken(body,accessToken);
         response.then().assertThat().statusCode(400);
-        String actualResponseBody = response.body().asString();
-        String expectedResponseBody = responseMessage.errorMessage("Ingredient ids must be provided");
-        assertEquals(expectedResponseBody, actualResponseBody);
+        String expected = responseMessage.errorMessage("Ingredient ids must be provided");
+        assertEquals(expected, response.body().asString());
     }
 
     @Description("code: 500 \n" +
             "Message: \"Internal Server Error\"")
-    @DisplayName("Create order with invalid ingredient id")
+    @DisplayName("Create order with invalid ingredients id")
     @Test
     public void invalidIngredientIdTest() throws InterruptedException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         Response response = order.doCreateOrder(gson.toJson(getWrongId()));
         response.then().assertThat().statusCode(500);
-        response.body().prettyPrint();
+        String actual = response.getBody().htmlPath().getString("body").substring(9);
+        assertEquals("Internal Server Error", actual);
     }
 
     @Description("code: 500 \n" +
             "Message: \"Internal Server Error\"")
-    @DisplayName("Create order with invalid ingredient id for authorized customer.")
+    @DisplayName("Create order with invalid ingredients id for authorized customer.")
     @Test
     public void invalidIngredientIdAuthorizedCustomerTest() throws InterruptedException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         Response response = order.doCreateOrderWithToken(gson.toJson(getWrongId()), accessToken);
         response.then().assertThat().statusCode(500);
-        response.body().prettyPrint();
+        String actual = response.getBody().htmlPath().getString("body").substring(9);
+        assertEquals("Internal Server Error", actual);
     }
 }

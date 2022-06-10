@@ -41,7 +41,8 @@ public class ChangeCustomerDataNegativeFlowTest {
     public void emailAlreadyExistsTest() throws JSONException {
         Response response = customer.doUpdate(body.setEmail(bodyExists.getEmail()), accessToken);
         response.then().assertThat().statusCode(403);
-        JSONAssert.assertEquals(responseMessage.errorMessage("User with such email already exists"), response.body().asString(), true);
+        String expected = responseMessage.errorMessage("User with such email already exists");
+        JSONAssert.assertEquals(expected, response.body().asString(), true);
     }
 
     @Description("code: 401. success: false. \n" +
@@ -51,7 +52,8 @@ public class ChangeCustomerDataNegativeFlowTest {
     public void unauthorizedCustomerTest() throws JSONException {
         response = customer.doUpdateEmptyData();
         response.then().assertThat().statusCode(401);
-        JSONAssert.assertEquals(responseMessage.errorMessage("You should be authorised"), response.body().asString(), true);
+        String expected = responseMessage.errorMessage("You should be authorised");
+        JSONAssert.assertEquals(expected, response.body().asString(), true);
     }
 
 }

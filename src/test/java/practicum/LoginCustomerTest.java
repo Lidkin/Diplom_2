@@ -25,7 +25,7 @@ public class LoginCustomerTest {
 
     @Before
     public void getToken() throws InterruptedException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         token = customer.doRegister(body).body().path("accessToken").toString().substring(7);
     }
 
@@ -40,13 +40,12 @@ public class LoginCustomerTest {
     @DisplayName("login customer: positive flow")
     @Test
     public void loginCustomerPositiveFlowTest() throws InterruptedException, JSONException {
-        Thread.sleep(1000);
+        Thread.sleep(500);
         io.restassured.response.Response response = customer.doLogin(body);
         response.then().assertThat().statusCode(200);
         accessToken = response.body().path("accessToken").toString().substring(7);
-        String actualResponseBody = response.getBody().asString();
-        String expectedResponseBody = responseMessage.validResponse(accessToken, response.body().path("refreshToken").toString());
-        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
+        String expected = responseMessage.validResponseBody(accessToken, response.body().path("refreshToken").toString());
+        JSONAssert.assertEquals(expected, response.getBody().asString(), true);
     }
 
 }

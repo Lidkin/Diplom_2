@@ -51,11 +51,10 @@ public class RegisterCustomerParameterizedTest {
             "Message: \"Email, password and name are required fields\"")
     @Test
     public void registerCustomerWithIncompleteDataTest() throws InterruptedException, JSONException {
-        Thread.sleep(2000);
+        Thread.sleep(500);
         response = customer.doRegister(new CustomerBody(emailParameter, passwordParameter, nameParameter));
         response.then().assertThat().statusCode(403);
-        String actualResponseBody = response.getBody().asString();
-        String expectedResponseBody = responseMessage.errorMessage("Email, password and name are required fields");
-        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
+        String expected = responseMessage.errorMessage("Email, password and name are required fields");
+        JSONAssert.assertEquals(expected, response.getBody().asString(), true);
     }
 }
