@@ -60,16 +60,4 @@ public class Ingredients {
         return burger;
     }
 
-    public Map<Integer, List<String>> getBun(){
-        return bun;
-    }
-
-    public Map<Integer, List<String>> getFilling(){
-        return filling;
-    }
-
-    public Map<Integer, List<String>> getSauce(){
-        return sauce;
-    }
-
 }
