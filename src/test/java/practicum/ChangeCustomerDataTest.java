@@ -1,6 +1,7 @@
 package practicum;
 
 import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.json.JSONException;
 import org.junit.*;
@@ -12,11 +13,12 @@ import practicum.customer.CustomerBody;
 import practicum.customer.Customer;
 
 @RunWith(Parameterized.class)
-public class ChangeCustomerDataPositiveFlowTest {
+public class ChangeCustomerDataTest {
 
     static Credentials credentials = new Credentials();
     static String accessToken;
     static Customer customer = new Customer();
+    static Response response;
     static CustomerBody body = new CustomerBody(
             credentials.getEmail(),
             credentials.getPassword(),
@@ -43,8 +45,7 @@ public class ChangeCustomerDataPositiveFlowTest {
     }
 
     @BeforeClass
-    public static void setUp() throws InterruptedException {
-        Thread.sleep(1000);
+    public static void setUp() {
         accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
      }
 
@@ -58,10 +59,22 @@ public class ChangeCustomerDataPositiveFlowTest {
     @Test
     public void changeCustomerInformation() throws JSONException {
         CustomerBody changedCustomerBody = new CustomerBody(emailParameter, passwordParameter, nameParameter);
-        ResponseMessage responseMessage = new ResponseMessage(emailParameter, nameParameter);
-        Response response = customer.doUpdate(changedCustomerBody, accessToken);
+        response = customer.doUpdate(changedCustomerBody, accessToken);
         response.then().assertThat().statusCode(200);
+        ResponseMessage responseMessage = new ResponseMessage(emailParameter, nameParameter);
         JSONAssert.assertEquals(responseMessage.responseBody(), response.getBody().asString(), true);
+    }
+
+    @Description("code: 401. success: false. \n" +
+            "Message: \"You should be authorised\"")
+    @DisplayName("Unauthorized customer.")
+    @Test
+    public void unauthorizedCustomerTest() throws JSONException {
+        CustomerBody changedCustomerBody = new CustomerBody(emailParameter, passwordParameter, nameParameter);
+        response = customer.doUpdateEmptyAccessToken(changedCustomerBody);
+        response.then().assertThat().statusCode(401);
+        String expected = new ResponseMessage().errorMessage("You should be authorised");
+        JSONAssert.assertEquals(expected, response.body().asString(), true);
     }
 
 }
