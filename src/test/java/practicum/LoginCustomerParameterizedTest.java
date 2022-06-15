@@ -57,7 +57,7 @@ public class LoginCustomerParameterizedTest {
 
     @After
     public void checkAndDelete() throws InterruptedException {
-        Thread.sleep(500);
+        Thread.sleep(1000);
         if (errorLoginResponse.body().path("accessToken") != null)
             customer.doDelete(errorLoginResponse.body().path("accessToken").toString().substring(7));
     }

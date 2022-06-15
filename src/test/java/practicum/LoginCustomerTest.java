@@ -31,7 +31,7 @@ public class LoginCustomerTest {
 
     @After
     public void cleanUp() throws InterruptedException {
-        Thread.sleep(500);
+        Thread.sleep(1000);
         if (loginToken == null) {
             customer.doDelete(registerToken.toString().substring(7));
         } else {

@@ -69,7 +69,7 @@ public class CreateOrderErrorTest {
 
     @After
     public void waitBeforeNextTest() throws InterruptedException {
-        Thread.sleep(500);
+        Thread.sleep(1000);
     }
 
     @AfterClass
