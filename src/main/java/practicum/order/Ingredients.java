@@ -6,7 +6,7 @@ import io.qameta.allure.internal.shadowed.jackson.databind.ObjectMapper;
 import java.util.*;
 
 
-public class Ingredients {
+public class Ingredients extends IngredientsData {
 
     Order order = new Order();
     String json = order.doGetIngredients().asString();

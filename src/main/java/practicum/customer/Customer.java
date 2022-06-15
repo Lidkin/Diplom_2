@@ -25,8 +25,8 @@ public class Customer extends BaseHttp {
     public Response doUpdate(CustomerBody body, String token){
         return doPatchRequestWithParam(apiUser, body, token);
     }
-    public Response doUpdateEmptyData(){
-        return doPatchRequest(apiUser);
+    public Response doUpdateEmptyAccessToken(CustomerBody body){
+        return doPatchRequest(apiUser, body);
     }
 
 }

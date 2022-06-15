@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import io.qameta.allure.Description;
 import io.qameta.allure.internal.shadowed.jackson.core.JsonProcessingException;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,14 +43,18 @@ public class CreateOrderTest {
     }
 
     @BeforeClass
-    public static void getToken() throws InterruptedException {
-        Thread.sleep(1000);
+    public static void getToken() {
         accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
     }
 
     @AfterClass
     public static void cleanUp() {
         customer.doDelete(accessToken);
+    }
+
+    @After
+    public void waitBeforeNextTest() throws InterruptedException {
+        Thread.sleep(500);
     }
 
     @Parameterized.Parameter
@@ -71,7 +76,7 @@ public class CreateOrderTest {
     @Description("code: 200 success: true. \n" +
             "Create order for an authorized customer. Parametrized Test.")
     @Test
-    public void createOrderAuthorizedCustomerPositiveFlowTest() throws InterruptedException {
+    public void createOrderAuthorizedCustomerPositiveFlowTest() {
         Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(sauceCount, fillingCount));
         bodyIngredients.put("ingredients", burger.get("id"));
         Response response = order.doCreateOrderWithToken(gson.toJson(bodyIngredients),accessToken);
@@ -80,19 +85,17 @@ public class CreateOrderTest {
         List<String> expected = burger.get("name");
         assertThat("List equality without order",
                 actual, containsInAnyOrder(expected.toArray()));
-        Thread.sleep(500);
     }
 
     @Description("code: 200 success: true. \n" +
             "Create order for an unauthorized customer. Parametrized Test.")
     @Test
-    public void createOrderPositiveFlowTest() throws InterruptedException {
+    public void createOrderPositiveFlowTest() {
         Map<String, List<String>> burger = new HashMap<>(ingredients.buildRandomBurger(sauceCount, fillingCount));
         bodyIngredients.put("ingredients", burger.get("id"));
         Response response = order.doCreateOrder(gson.toJson(bodyIngredients));
         response.then().assertThat().statusCode(200);
         assertTrue(response.getBody().path("success"));
-        Thread.sleep(500);
     }
 
 }

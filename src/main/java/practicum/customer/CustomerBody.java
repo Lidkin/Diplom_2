@@ -3,9 +3,9 @@
 
 public class CustomerBody {
 
-    String email;
-    String password;
-    String name;
+    private String email;
+    private String password;
+    private String name;
 
 
     public CustomerBody(String email, String password, String name) {
