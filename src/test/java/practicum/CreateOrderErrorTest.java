@@ -6,6 +6,7 @@ import io.qameta.allure.Step;
 import io.qameta.allure.internal.shadowed.jackson.core.JsonProcessingException;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,6 +24,7 @@ public class CreateOrderErrorTest {
 
     static Credentials credentials = new Credentials();
     static Ingredients ingredients;
+
     static {
         try {
             ingredients = new Ingredients();
@@ -30,6 +32,7 @@ public class CreateOrderErrorTest {
             e.printStackTrace();
         }
     }
+
     static Gson gson = new Gson();
     static ResponseMessage responseMessage = new ResponseMessage();
     static Customer customer = new Customer();
@@ -45,17 +48,28 @@ public class CreateOrderErrorTest {
     public Map<String, List<String>> getWrongId() {
         Map<String, List<String>> wrongBody = new HashMap<>();
         List<String> wrongId = new ArrayList<>();
-        for(String el: burger.get("id"))
-           wrongId.add(el.replaceAll("0", "o"));
+        for (String el : burger.get("id"))
+            wrongId.add(el.replaceAll("0", "o"));
         wrongId.addAll(burger.get("id"));
         wrongBody.put("ingredients", wrongId);
         return wrongBody;
     }
 
+    @Step("empty body of ingredients")
+    public Map<String, String> getEmptyBody() {
+        Map<String, String> bodyIngredients = new HashMap<>();
+        bodyIngredients.put("ingredients", "");
+        return bodyIngredients;
+    }
+
     @BeforeClass
-    public static void getToken() throws InterruptedException {
-        Thread.sleep(1000);
+    public static void getToken() {
         accessToken = customer.doRegister(customerBody).body().path("accessToken").toString().substring(7);
+    }
+
+    @After
+    public void waitBeforeNextTest() throws InterruptedException {
+        Thread.sleep(500);
     }
 
     @AfterClass
@@ -67,10 +81,8 @@ public class CreateOrderErrorTest {
             "Message: \"Ingredient ids must be provided\"")
     @DisplayName("Test with an empty list of ingredients")
     @Test
-    public void emptyIngredientsTest() throws InterruptedException {
-        Thread.sleep(500);
-        String body = "{\"ingredients\": []}";
-        Response response = order.doCreateOrder(body);
+    public void emptyIngredientsTest() {
+        Response response = order.doCreateOrder(gson.toJson(getEmptyBody()));
         response.then().assertThat().statusCode(400);
         String expected = responseMessage.errorMessage("Ingredient ids must be provided");
         assertEquals(expected, response.body().asString());
@@ -80,10 +92,8 @@ public class CreateOrderErrorTest {
             "Message: \"Ingredient ids must be provided\"")
     @DisplayName("Test with an empty list of ingredients for authorized customer")
     @Test
-    public void emptyIngredientsAuthorizedCustomerTest() throws InterruptedException {
-        Thread.sleep(500);
-        String body = "{\"ingredients\": []}";
-        Response response = order.doCreateOrderWithToken(body,accessToken);
+    public void emptyIngredientsAuthorizedCustomerTest() {
+        Response response = order.doCreateOrderWithToken(gson.toJson(getEmptyBody()), accessToken);
         response.then().assertThat().statusCode(400);
         String expected = responseMessage.errorMessage("Ingredient ids must be provided");
         assertEquals(expected, response.body().asString());
@@ -93,8 +103,7 @@ public class CreateOrderErrorTest {
             "Message: \"Internal Server Error\"")
     @DisplayName("Create order with invalid ingredients id")
     @Test
-    public void invalidIngredientIdTest() throws InterruptedException {
-        Thread.sleep(500);
+    public void invalidIngredientIdTest() {
         Response response = order.doCreateOrder(gson.toJson(getWrongId()));
         response.then().assertThat().statusCode(500);
         String actual = response.getBody().htmlPath().getString("body").substring(9);
@@ -105,8 +114,7 @@ public class CreateOrderErrorTest {
             "Message: \"Internal Server Error\"")
     @DisplayName("Create order with invalid ingredients id for authorized customer.")
     @Test
-    public void invalidIngredientIdAuthorizedCustomerTest() throws InterruptedException {
-        Thread.sleep(500);
+    public void invalidIngredientIdAuthorizedCustomerTest() {
         Response response = order.doCreateOrderWithToken(gson.toJson(getWrongId()), accessToken);
         response.then().assertThat().statusCode(500);
         String actual = response.getBody().htmlPath().getString("body").substring(9);
