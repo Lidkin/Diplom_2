@@ -2,112 +2,112 @@ package practicum.order;
 
 public class IngredientsData {
 
-    String _id;
-    String name;
-    String type;
-    Number proteins;
-    Number fat;
-    Number carbohydrates;
-    Number calories;
-    Number price;
-    String image;
-    String image_mobile;
-    String image_large;
-    Number __v;
+    private String _id;
+    private String name;
+    private String type;
+    private Number proteins;
+    private Number fat;
+    private Number carbohydrates;
+    private Number calories;
+    private Number price;
+    private String image;
+    private String image_mobile;
+    private String image_large;
+    private Number __v;
 
-    public String get_id() {
+    protected String get_id() {
         return _id;
     }
 
-    public String getName() {
+    protected String getName() {
         return name;
     }
 
-    public String getType() {
+    protected String getType() {
         return type;
     }
 
-    public void set_id(String _id) {
+    protected void set_id(String _id) {
         this._id = _id;
     }
 
-    public void setName(String name) {
+    protected void setName(String name) {
         this.name = name;
     }
 
-    public void setType(String type) {
+    protected void setType(String type) {
         this.type = type;
     }
 
-    public Number getProteins() {
+    protected Number getProteins() {
         return proteins;
     }
 
-    public void setProteins(Number proteins) {
+    protected void setProteins(Number proteins) {
         this.proteins = proteins;
     }
 
-    public Number getFat() {
+    protected Number getFat() {
         return fat;
     }
 
-    public void setFat(Number fat) {
+    protected void setFat(Number fat) {
         this.fat = fat;
     }
 
-    public Number getCarbohydrates() {
+    protected Number getCarbohydrates() {
         return carbohydrates;
     }
 
-    public void setCarbohydrates(Number carbohydrates) {
+    protected void setCarbohydrates(Number carbohydrates) {
         this.carbohydrates = carbohydrates;
     }
 
-    public Number getCalories() {
+    protected Number getCalories() {
         return calories;
     }
 
-    public void setCalories(Number calories) {
+    protected void setCalories(Number calories) {
         this.calories = calories;
     }
 
-    public Number getPrice() {
+    protected Number getPrice() {
         return price;
     }
 
-    public void setPrice(Number price) {
+    protected void setPrice(Number price) {
         this.price = price;
     }
 
-    public String getImage() {
+    protected String getImage() {
         return image;
     }
 
-    public void setImage(String image) {
+    protected void setImage(String image) {
         this.image = image;
     }
 
-    public String getImage_mobile() {
+    protected String getImage_mobile() {
         return image_mobile;
     }
 
-    public void setImage_mobile(String image_mobile) {
+    protected void setImage_mobile(String image_mobile) {
         this.image_mobile = image_mobile;
     }
 
-    public String getImage_large() {
+    protected String getImage_large() {
         return image_large;
     }
 
-    public void setImage_large(String image_large) {
+    protected void setImage_large(String image_large) {
         this.image_large = image_large;
     }
 
-    public Number get__v() {
+    protected Number get__v() {
         return __v;
     }
 
-    public void set__v(Number __v) {
+    protected void set__v(Number __v) {
         this.__v = __v;
     }
 
