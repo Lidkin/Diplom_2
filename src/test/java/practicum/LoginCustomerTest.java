@@ -2,6 +2,7 @@ package practicum;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.Response;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
@@ -14,7 +15,7 @@ import practicum.customer.Customer;
 
 public class LoginCustomerTest {
 
-    String accessToken, token;
+    Object loginToken, registerToken;
     Credentials credentials = new Credentials();
     Customer customer = new Customer();
     CustomerBody body = new CustomerBody(
@@ -24,27 +25,28 @@ public class LoginCustomerTest {
     ResponseMessage responseMessage = new ResponseMessage(body.getEmail(), body.getName());
 
     @Before
-    public void getToken() throws InterruptedException {
-        Thread.sleep(500);
-        token = customer.doRegister(body).body().path("accessToken").toString().substring(7);
+    public void getToken() {
+        registerToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
     }
 
     @After
-    public void cleanUp() {
-        if(accessToken == null)
-            customer.doDelete(token);
-        customer.doDelete(accessToken);
+    public void cleanUp() throws InterruptedException {
+        Thread.sleep(500);
+        if (loginToken == null) {
+            customer.doDelete(registerToken.toString().substring(7));
+        } else {
+            customer.doDelete(loginToken.toString().substring(7));
+        }
     }
 
     @Description("code: 200. success: true.")
     @DisplayName("login customer: positive flow")
     @Test
-    public void loginCustomerPositiveFlowTest() throws InterruptedException, JSONException {
-        Thread.sleep(500);
-        io.restassured.response.Response response = customer.doLogin(body);
+    public void loginCustomerPositiveFlowTest() throws JSONException {
+        Response response = customer.doLogin(body);
         response.then().assertThat().statusCode(200);
-        accessToken = response.body().path("accessToken").toString().substring(7);
-        String expected = responseMessage.validResponseBody(accessToken, response.body().path("refreshToken").toString());
+        loginToken = response.body().path("accessToken");
+        String expected = responseMessage.validResponseBody(loginToken, response.body().path("refreshToken"));
         JSONAssert.assertEquals(expected, response.getBody().asString(), true);
     }
 

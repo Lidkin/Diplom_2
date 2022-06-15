@@ -17,8 +17,8 @@ import practicum.customer.Customer;
 @RunWith(Parameterized.class)
 public class LoginCustomerParameterizedTest {
 
-    static String accessToken;
-    Response errorResponse;
+    static String registerToken;
+    Response errorLoginResponse;
     static Credentials credentials = new Credentials();
     static ResponseMessage responseMessage = new ResponseMessage();
     static Customer customer = new Customer();
@@ -27,16 +27,6 @@ public class LoginCustomerParameterizedTest {
             credentials.getPassword(),
             credentials.getName());
 
-    @BeforeClass
-    public static void getToken() throws InterruptedException {
-        Thread.sleep(1000);
-        accessToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
-    }
-
-    @AfterClass
-    public static void cleanUp() {
-        customer.doDelete(accessToken);
-    }
 
     @Parameterized.Parameter
     public String emailParameter;
@@ -55,21 +45,31 @@ public class LoginCustomerParameterizedTest {
         };
     }
 
+    @BeforeClass
+    public static void getToken() {
+        registerToken = customer.doRegister(body).body().path("accessToken").toString().substring(7);
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        customer.doDelete(registerToken);
+    }
+
     @After
-    public void checkAndDelete(){
-        if (errorResponse.body().path("accessToken") != null)
-            customer.doDelete(errorResponse.body().path("accessToken").toString().substring(7));
+    public void checkAndDelete() throws InterruptedException {
+        Thread.sleep(500);
+        if (errorLoginResponse.body().path("accessToken") != null)
+            customer.doDelete(errorLoginResponse.body().path("accessToken").toString().substring(7));
     }
 
     @Description("code: 401. success: false. \n" +
             "Message: \"email or password are incorrect\"")
     @Test
-    public void registerCustomerWithIncompleteDataTest() throws InterruptedException, JSONException {
-        Thread.sleep(500);
-        errorResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
-        errorResponse.then().assertThat().statusCode(401);
+    public void loginCustomerWithIncompleteDataTest() throws JSONException {
+        errorLoginResponse = customer.doLogin(new CustomerBody(emailParameter, passwordParameter));
+        errorLoginResponse.then().assertThat().statusCode(401);
         String expected = responseMessage.errorMessage("email or password are incorrect");
-        JSONAssert.assertEquals(expected, errorResponse.getBody().asString(), true);
+        JSONAssert.assertEquals(expected, errorLoginResponse.getBody().asString(), true);
     }
 
 }
